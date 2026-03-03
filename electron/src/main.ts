@@ -233,6 +233,18 @@ async function buildTrayMenu(): Promise<Menu> {
                 tray?.setContextMenu(menu);
             },
         },
+        {
+            label: '🗑 Clear Cache',
+            click: async () => {
+                const dir = getOutputsDir();
+                if (!fs.existsSync(dir)) return;
+                const files = fs.readdirSync(dir).filter((f) => f.endsWith('.png'));
+                for (const f of files) {
+                    fs.unlinkSync(path.join(dir, f));
+                }
+                console.log(`Tray: cleared ${files.length} screenshots from ${dir}`);
+            },
+        },
         { type: 'separator' },
         {
             label: 'Quit',

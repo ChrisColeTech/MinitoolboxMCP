@@ -126,6 +126,16 @@ export function buildCommands(): Command[] {
             category: 'Capture',
             action: () => store().captureOnce(),
         },
+        {
+            id: 'capture.clear-cache',
+            label: 'Clear Cache',
+            icon: 'Trash2',
+            category: 'Capture',
+            action: async () => {
+                const count = await window.electronAPI?.clearCache();
+                console.log(`Cleared ${count} screenshots`);
+            },
+        },
     ];
 }
 
