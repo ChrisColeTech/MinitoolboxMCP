@@ -15,9 +15,10 @@ export default function CaptureWorkerPage() {
         window.electronAPI.onCaptureRequest(async (sourceId, requestId) => {
             const video = videoRef.current!;
             const canvas = canvasRef.current!;
+            let stream: MediaStream | null = null;
 
             try {
-                const stream = await (navigator.mediaDevices as any).getUserMedia({
+                stream = await (navigator.mediaDevices as any).getUserMedia({
                     audio: false,
                     video: {
                         mandatory: {
@@ -45,12 +46,15 @@ export default function CaptureWorkerPage() {
                 canvas.getContext('2d')!.drawImage(video, 0, 0);
                 const dataUrl = canvas.toDataURL('image/png');
 
-                stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
-                video.srcObject = null;
-
                 window.electronAPI.sendCaptureResult(requestId, dataUrl, canvas.width, canvas.height);
             } catch (err: any) {
                 window.electronAPI.sendCaptureError(requestId, err.message);
+            } finally {
+                // Always stop all tracks and release the stream to kill the sharing indicator
+                if (stream) {
+                    stream.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+                }
+                video.srcObject = null;
             }
         });
 

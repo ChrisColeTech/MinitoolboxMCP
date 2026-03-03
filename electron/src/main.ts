@@ -243,6 +243,39 @@ ipcMain.handle('window-maximize', () => {
 });
 ipcMain.handle('window-close', () => mainWindow?.close());
 ipcMain.handle('window-is-maximized', () => mainWindow?.isMaximized() ?? false);
+ipcMain.handle('toggle-devtools', () => mainWindow?.webContents.toggleDevTools());
+ipcMain.handle('show-window', () => {
+    mainWindow?.show();
+    mainWindow?.focus();
+});
+ipcMain.handle('hide-window', () => mainWindow?.hide());
+ipcMain.handle('quit-app', () => {
+    app.quit();
+});
+
+// ─── IPC: App self-screenshot (capturePage) ─────────────────────
+
+ipcMain.handle('capture-page', async (_event, outputPath?: string): Promise<{
+    ok: boolean; savedPath?: string; dataUrl?: string; width?: number; height?: number; error?: string;
+}> => {
+    if (!mainWindow) return { ok: false, error: 'No main window' };
+    try {
+        const image = await mainWindow.webContents.capturePage();
+        const pngBuffer = image.toPNG();
+        const size = image.getSize();
+        const dataUrl = `data:image/png;base64,${pngBuffer.toString('base64')}`;
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const finalPath = outputPath || path.join(getOutputsDir(), `app-${timestamp}.png`);
+        const dir = path.dirname(finalPath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(finalPath, pngBuffer);
+
+        return { ok: true, savedPath: finalPath, dataUrl, width: size.width, height: size.height };
+    } catch (err: any) {
+        return { ok: false, error: err.message };
+    }
+});
 
 // ─── IPC: Capture & Sources ────────────────────────────────────
 

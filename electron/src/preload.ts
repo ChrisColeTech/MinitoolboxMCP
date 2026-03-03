@@ -6,10 +6,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
     windowMaximize: () => ipcRenderer.invoke('window-maximize'),
     windowClose: () => ipcRenderer.invoke('window-close'),
     windowIsMaximized: () => ipcRenderer.invoke('window-is-maximized'),
+    toggleDevTools: () => ipcRenderer.invoke('toggle-devtools'),
+    showWindow: () => ipcRenderer.invoke('show-window'),
+    hideWindow: () => ipcRenderer.invoke('hide-window'),
+    quitApp: () => ipcRenderer.invoke('quit-app'),
 
     // ─── Capture ───
     getSources: () => ipcRenderer.invoke('get-sources'),
     captureSource: (sourceId: string) => ipcRenderer.invoke('capture-source', sourceId),
+    capturePage: (outputPath?: string) => ipcRenderer.invoke('capture-page', outputPath),
 
     // ─── Capture Worker ───
     workerReady: () => ipcRenderer.send('capture-worker-ready'),

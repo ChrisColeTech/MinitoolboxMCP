@@ -32,7 +32,10 @@ export interface AppConfig {
 export type WsMessageType =
     | 'capture:request'
     | 'capture:result'
+    | 'app:capture'
+    | 'app:capture:result'
     | 'sources:list'
+    | 'sources:select'
     | 'sources:result'
     | 'gallery:refresh'
     | 'gallery:result'

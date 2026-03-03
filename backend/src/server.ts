@@ -7,6 +7,9 @@ import { logger } from './utils/logger.js';
 import { ScreenshotService } from './services/screenshot.service.js';
 import { ScreenshotController } from './controllers/screenshot.controller.js';
 import { screenshotRoutes } from './routes/screenshot.routes.js';
+import { navigationRoutes } from './routes/navigation.routes.js';
+import { commandRoutes } from './routes/command.routes.js';
+import { sourceRoutes } from './routes/source.routes.js';
 import { registerWebSocket } from './websocket.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -40,9 +43,12 @@ async function main() {
     // Register REST routes
     const controller = new ScreenshotController(screenshotService);
     await screenshotRoutes(fastify, controller);
+    await navigationRoutes(fastify);
+    await commandRoutes(fastify);
+    await sourceRoutes(fastify);
 
     // Health check
-    fastify.get('/api/health', async () => ({
+    fastify.post('/api/health', async () => ({
         status: 'ok',
         uptime: process.uptime(),
         timestamp: new Date().toISOString(),

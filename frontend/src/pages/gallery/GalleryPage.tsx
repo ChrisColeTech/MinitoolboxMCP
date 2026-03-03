@@ -1,15 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
 import { RefreshCw, ImageOff, X, ExternalLink } from 'lucide-react';
-import type { OutputFile, Status } from '../../types/electron';
-
-type LayoutContext = {
-    status: Status;
-    setStatus: (s: Status) => void;
-};
+import type { OutputFile } from '../../types/electron';
+import { useAppStore } from '../../store/useAppStore';
 
 export default function GalleryPage() {
-    const { setStatus } = useOutletContext<LayoutContext>();
+    const setStatus = useAppStore((s) => s.setStatus);
     const [files, setFiles] = useState<OutputFile[]>([]);
     const [selected, setSelected] = useState<OutputFile | null>(null);
     const [loading, setLoading] = useState(true);

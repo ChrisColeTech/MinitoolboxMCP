@@ -6,26 +6,67 @@ import { logger } from './utils/logger.js';
 
 const clients = new Set<WebSocket>();
 
-/**
- * Broadcast a message to all connected WebSocket clients.
- */
+// ── Generic pending request-response map ──
+
+interface PendingRequest {
+    resolve: (result: any) => void;
+    reject: (err: Error) => void;
+    timer: ReturnType<typeof setTimeout>;
+}
+
+const pending = new Map<string, PendingRequest>();
+let idCounter = 0;
+
+function createPendingRequest(
+    prefix: string,
+    msgType: WsMessage['type'],
+    payload: Record<string, unknown>,
+    timeoutMs = 10000,
+    timeoutMsg = 'Request timed out — is the Electron app running?',
+): Promise<any> {
+    const id = `${prefix}_${++idCounter}`;
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            pending.delete(id);
+            reject(new Error(timeoutMsg));
+        }, timeoutMs);
+        pending.set(id, { resolve, reject, timer });
+        broadcast(msgType, { id, ...payload });
+    });
+}
+
+// ── Public request functions ──
+
+export function requestCapture(sourceIndex: number): Promise<any> {
+    return createPendingRequest('cap', 'capture:request', { sourceIndex });
+}
+
+export function requestAppCapture(): Promise<any> {
+    return createPendingRequest('app', 'app:capture', {});
+}
+
+export function requestSelectSource(windowName: string): Promise<any> {
+    return createPendingRequest('sel', 'sources:select', { windowName });
+}
+
+export function requestListSources(): Promise<any> {
+    return createPendingRequest('lst', 'sources:list', {});
+}
+
+// ── Broadcast ──
+
 export function broadcast<T>(type: WsMessage['type'], payload: T) {
-    const msg: WsMessage<T> = {
-        type,
-        payload,
-        timestamp: Date.now(),
-    };
+    const msg: WsMessage<T> = { type, payload, timestamp: Date.now() };
     const data = JSON.stringify(msg);
     for (const client of clients) {
-        if (client.readyState === 1) { // WebSocket.OPEN
+        if (client.readyState === 1) {
             client.send(data);
         }
     }
 }
 
-/**
- * Register the /ws WebSocket endpoint.
- */
+// ── WebSocket endpoint ──
+
 export async function registerWebSocket(
     fastify: FastifyInstance,
     screenshotService: ScreenshotService,
@@ -35,7 +76,6 @@ export async function registerWebSocket(
         clients.add(ws);
         logger.info(`WebSocket client connected (${clients.size} total)`);
 
-        // Send initial status
         broadcast('status:update', { connected: clients.size });
 
         ws.on('message', (raw) => {
@@ -60,14 +100,23 @@ async function handleMessage(
     screenshotService: ScreenshotService,
 ) {
     switch (msg.type) {
-        case 'sources:list':
-            // Frontend asks for sources — we relay to Electron or respond with error
-            logger.debug('WS: sources:list requested');
+        case 'capture:result':
+        case 'app:capture:result':
+        case 'sources:result': {
+            // Resolve pending REST request
+            const payload = msg.payload as any;
+            const p = pending.get(payload?.id);
+            if (p) {
+                clearTimeout(p.timer);
+                pending.delete(payload.id);
+                if (payload.error) {
+                    p.reject(new Error(payload.error));
+                } else {
+                    p.resolve(payload);
+                }
+            }
             break;
-
-        case 'capture:request':
-            logger.debug('WS: capture:request', msg.payload);
-            break;
+        }
 
         case 'gallery:refresh': {
             const files = screenshotService.listScreenshots();

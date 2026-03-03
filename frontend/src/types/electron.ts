@@ -30,8 +30,13 @@ export interface ElectronAPI {
     windowMaximize(): Promise<void>;
     windowClose(): Promise<void>;
     windowIsMaximized(): Promise<boolean>;
+    toggleDevTools(): Promise<void>;
+    showWindow(): Promise<void>;
+    hideWindow(): Promise<void>;
+    quitApp(): Promise<void>;
     getSources(): Promise<WindowSource[]>;
     captureSource(sourceId: string): Promise<CaptureResult>;
+    capturePage(outputPath?: string): Promise<{ ok: boolean; savedPath?: string; dataUrl?: string; width?: number; height?: number; error?: string }>;
     workerReady(): void;
     onCaptureRequest(callback: (sourceId: string, requestId: string) => void): void;
     sendCaptureResult(requestId: string, dataUrl: string, width: number, height: number): void;

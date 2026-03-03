@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Minus, Square, Copy, X } from 'lucide-react';
+import MenuBar from './MenuBar';
 
 export default function TitleBar() {
     const [isMaximized, setIsMaximized] = useState(false);
@@ -28,12 +29,15 @@ export default function TitleBar() {
         <div className="flex items-center h-8 bg-surface-1 border-b border-border shrink-0 select-none"
             style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
             {/* App icon + title */}
-            <div className="flex items-center gap-2 pl-3 pr-4">
+            <div className="flex items-center gap-2 pl-3 pr-2"
+                style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
                 <div className="w-3.5 h-3.5 rounded-sm bg-accent flex items-center justify-center">
                     <span className="text-[8px] text-white font-bold">M</span>
                 </div>
-                <span className="text-[11px] text-text-dim font-medium">MinitoolboxMCP</span>
             </div>
+
+            {/* Menu bar */}
+            <MenuBar />
 
             {/* Spacer (draggable) */}
             <div className="flex-1" />

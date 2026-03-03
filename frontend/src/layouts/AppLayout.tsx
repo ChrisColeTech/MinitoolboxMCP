@@ -1,10 +1,13 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Camera, Image, Settings } from 'lucide-react';
-import { useState } from 'react';
-import type { Status } from '../types/electron';
+import { useState, useEffect } from 'react';
 import SettingsDialog from '../components/SettingsDialog';
 import VscodeStatusBar from '../components/VscodeStatusBar';
 import TitleBar from '../components/TitleBar';
+import { useWebSocket } from '../hooks/useWebSocket';
+import { registry } from '../lib/keyboard/keyboardRegistry';
+import { registerAllCommands } from '../lib/keyboard/commands';
+import { useAppStore } from '../store/useAppStore';
 
 const TOP_NAV = [
     { path: '/', icon: Camera, label: 'Capture' },
@@ -15,7 +18,27 @@ export default function AppLayout() {
     const location = useLocation();
     const navigate = useNavigate();
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [status, setStatus] = useState<Status>({ message: 'Ready', type: 'idle' });
+    const status = useAppStore((s) => s.status);
+    const { status: wsStatus } = useWebSocket();
+
+    // Register keyboard shortcuts once
+    useEffect(() => {
+        registerAllCommands();
+        window.addEventListener('keydown', registry.handleKeyDown);
+
+        // Listen for shortcut custom events
+        const onSettings = () => setSettingsOpen((v) => !v);
+        const onNavigate = (e: Event) => navigate((e as CustomEvent).detail);
+
+        window.addEventListener('shortcut:settings', onSettings);
+        window.addEventListener('shortcut:navigate', onNavigate);
+
+        return () => {
+            window.removeEventListener('keydown', registry.handleKeyDown);
+            window.removeEventListener('shortcut:settings', onSettings);
+            window.removeEventListener('shortcut:navigate', onNavigate);
+        };
+    }, [navigate]);
 
     return (
         <div className="flex flex-col h-screen select-none">
@@ -62,12 +85,12 @@ export default function AppLayout() {
 
                 {/* ── Main content ── */}
                 <main className="flex-1 flex flex-col overflow-hidden">
-                    <Outlet context={{ status, setStatus }} />
+                    <Outlet />
                 </main>
             </div>
 
             {/* ── VS Code status bar ── */}
-            <VscodeStatusBar status={status} />
+            <VscodeStatusBar status={status} wsStatus={wsStatus} />
 
             {/* ── Settings Dialog ── */}
             {settingsOpen && <SettingsDialog onClose={() => setSettingsOpen(false)} />}
