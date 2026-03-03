@@ -39,6 +39,7 @@ function errorLoggerPlugin(): Plugin {
 const logger = createLogger('info', { prefix: '[vite]' })
 
 export default defineConfig({
+  base: './',
   plugins: [errorLoggerPlugin(), react(), tailwindcss()],
   clearScreen: false,
   customLogger: logger,
