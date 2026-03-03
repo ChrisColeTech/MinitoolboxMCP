@@ -1,0 +1,17 @@
+{
+    "name": "minitoolboxmcp-electron",
+    "version": "1.0.0",
+    "private": true,
+    "main": "dist/main.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc && cross-env ELECTRON_IS_DEV=1 electron dist/main.js",
+        "start": "electron dist/main.js"
+    },
+    "devDependencies": {
+        "@types/node": "^25.3.3",
+        "cross-env": "^10.1.0",
+        "electron": "^40.6.1",
+        "typescript": "^5.9.3"
+    }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "minitoolboxmcp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MCP server with developer utility tools — screenshot capture via Electron",
+  "scripts": {
+    "dev": "npx -y kill-port 5173 3100 && concurrently --kill-others -n vite,backend,electron -c green,yellow,blue \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:electron\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:electron": "wait-on http://localhost:5173 && cd electron && npm run dev",
+    "build": "cd frontend && npm run build && cd ../backend && npm run build && cd ../electron && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "cross-env": "^10.1.0",
+    "wait-on": "^8.0.3"
+  }
+}

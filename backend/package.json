@@ -1,0 +1,23 @@
+{
+    "name": "minitoolbox-backend",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "dist/server.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc && node dist/server.js",
+        "mcp": "tsc && node dist/mcp-server.js"
+    },
+    "dependencies": {
+        "fastify": "^5.3.2",
+        "@fastify/websocket": "^11.0.3",
+        "@modelcontextprotocol/sdk": "^1.12.1",
+        "pino": "^9.6.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.13.10",
+        "@types/ws": "^8.18.1",
+        "typescript": "^5.8.2"
+    }
+}
