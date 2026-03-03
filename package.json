@@ -2,6 +2,8 @@
   "name": "minitoolboxmcp",
   "version": "1.0.0",
   "private": true,
+  "main": "electron/dist/main.js",
+  "author": "ChrisColeTech",
   "description": "MCP server with developer utility tools — screenshot capture via Electron",
   "scripts": {
     "dev": "npx -y kill-port 5173 3100 && concurrently --kill-others -n vite,backend,electron -c green,yellow,blue \"npm run dev:frontend\" \"npm run dev:backend\" \"npm run dev:electron\"",
