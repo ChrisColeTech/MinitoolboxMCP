@@ -223,7 +223,7 @@ async function buildTrayMenu(): Promise<Menu> {
             },
         },
         { type: 'separator' },
-        { label: '📸 Capture Window', enabled: false },
+        { label: 'Capture Window', enabled: false },
         ...windowItems,
         { type: 'separator' },
         {
@@ -234,7 +234,7 @@ async function buildTrayMenu(): Promise<Menu> {
             },
         },
         {
-            label: '🗑 Clear Cache',
+            label: 'Clear Cache',
             click: async () => {
                 const dir = getOutputsDir();
                 if (!fs.existsSync(dir)) return;
