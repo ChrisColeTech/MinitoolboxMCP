@@ -1,14 +1,54 @@
 import { app, BrowserWindow, ipcMain, desktopCapturer, Tray, Menu, nativeImage, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
+import { ChildProcess, fork } from 'child_process';
 
 let mainWindow: BrowserWindow | null = null;
 let captureWorkerWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let isQuitting = false;
+let backendProcess: ChildProcess | null = null;
 
 const isDev = process.env.ELECTRON_IS_DEV === '1';
 const VITE_DEV_URL = 'http://localhost:5173';
+
+// ─── Backend server (prod only) ─────────────────────────────────
+
+function startBackendServer(): void {
+    if (isDev) return; // In dev, backend runs separately via concurrently
+
+    const serverPath = path.join(process.resourcesPath, 'backend', 'dist', 'server.js');
+    if (!fs.existsSync(serverPath)) {
+        console.error(`Backend server not found: ${serverPath}`);
+        return;
+    }
+
+    console.log(`Starting backend server: ${serverPath}`);
+    backendProcess = fork(serverPath, [], {
+        cwd: path.join(process.resourcesPath, 'backend'),
+        env: { ...process.env, NODE_ENV: 'production' },
+        stdio: 'pipe',
+    });
+
+    backendProcess.stdout?.on('data', (data: Buffer) => {
+        console.log(`[backend] ${data.toString().trim()}`);
+    });
+    backendProcess.stderr?.on('data', (data: Buffer) => {
+        console.error(`[backend] ${data.toString().trim()}`);
+    });
+    backendProcess.on('exit', (code) => {
+        console.log(`Backend server exited with code ${code}`);
+        backendProcess = null;
+    });
+}
+
+function stopBackendServer(): void {
+    if (backendProcess) {
+        console.log('Stopping backend server...');
+        backendProcess.kill('SIGTERM');
+        backendProcess = null;
+    }
+}
 
 // ─── Outputs directory ──────────────────────────────────────────
 
@@ -358,6 +398,7 @@ ipcMain.handle('clear-cache', async () => {
 // ─── App Lifecycle ──────────────────────────────────────────────
 
 app.whenReady().then(async () => {
+    startBackendServer();
     createCaptureWorker();
     await createTray();
     createMainWindow();
@@ -374,7 +415,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
-    // Kill the Vite dev server port so it's free on next restart
+    stopBackendServer();
     if (isDev) {
         require('child_process').exec('npx -y kill-port 5173');
     }

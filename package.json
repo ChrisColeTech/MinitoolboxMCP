@@ -8,11 +8,15 @@
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
     "dev:electron": "wait-on http://localhost:5173 && cd electron && npm run dev",
-    "build": "cd frontend && npm run build && cd ../backend && npm run build && cd ../electron && npm run build"
+    "build": "cd frontend && npm run build && cd ../backend && npx tsc && cd ../electron && npx tsc",
+    "pack": "npm run build && npx electron-builder --dir",
+    "dist": "npm run build && npx electron-builder"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
     "cross-env": "^10.1.0",
+    "electron": "^40.6.1",
+    "electron-builder": "^26.8.1",
     "wait-on": "^8.0.3"
   }
 }
