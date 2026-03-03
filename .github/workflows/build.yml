@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install frontend dependencies
+        run: cd frontend && npm install
+
+      - name: Install backend dependencies
+        run: cd backend && npm install
+
+      - name: Install electron dependencies
+        run: cd electron && npm install
+
+      - name: Build all
+        run: npm run build
+
+      - name: Package (portable)
+        run: npx electron-builder --win portable --config electron-builder.json
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MinitoolboxMCP-windows-portable
+          path: release/*.exe
+          if-no-files-found: error

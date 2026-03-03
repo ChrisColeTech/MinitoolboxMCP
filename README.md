@@ -95,6 +95,26 @@ Press `Ctrl+C`. The `--kill-others` flag shuts down all services together. Elect
 
 **Backend WS disconnected** — Check `[backend]` log for errors. The frontend auto-reconnects every 3 seconds.
 
+### Production Build
+
+```bash
+npm run build    # Compile frontend + backend + electron
+npm run pack     # Build + create unpacked dir (for testing)
+npm run dist     # Build + create portable exe
+```
+
+Output lands in `release/`. The production app auto-starts the backend server and loads the frontend from bundled resources.
+
+### System Tray
+
+The app minimizes to the system tray on close. Right-click the tray icon for:
+
+- **Show Window** — restore the app
+- **Capture Window** — quick-capture any listed window
+- **Refresh** — refresh the window list
+- **Clear Cache** — delete all saved screenshots
+- **Quit** — exit the app and stop the backend
+
 ## MCP Tools
 
 The MCP server is named `minitoolbox`. Configure in your client:
@@ -114,7 +134,25 @@ The MCP server is named `minitoolbox`. Configure in your client:
 | `capture_screenshot` | Capture a target window | `source_index` — index from `list_sources` | No (returns target) |
 | `select_source` | Select window in dropdown | `window_name` — fuzzy match | ✅ App UI |
 | `navigate_page` | Switch UI page | `page` — capture, gallery | ✅ App UI |
-| `execute_command` | Run keyboard shortcut by ID | `command` — e.g. `capture.refresh` | ✅ App UI |
+| `execute_command` | Run command by ID | `command` — see table below | ✅ App UI |
+
+### Available Commands
+
+| Command | Description |
+|---------|-------------|
+| `app.toggle-devtools` | Toggle Developer Tools |
+| `app.settings` | Open Settings dialog |
+| `app.reload` | Reload window |
+| `app.show-window` | Show/restore window |
+| `app.hide-window` | Hide to tray |
+| `app.quit` | Quit application |
+| `view.capture` | Navigate to Capture page |
+| `view.gallery` | Navigate to Gallery page |
+| `capture.refresh` | Refresh window sources |
+| `capture.start-live` | Start live preview |
+| `capture.stop-live` | Stop live preview |
+| `capture.once` | Capture single frame |
+| `capture.clear-cache` | Delete all saved screenshots |
 
 ## REST API
 
